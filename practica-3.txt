@@ -1,0 +1,21 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname practica3) (read-case-sensitive #t) (teachpacks ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+;1
+(define (recibirTecla s k)
+  (cond [(key=? k "r") "red"]
+  [(key=? k "g") "green"]
+  [(key=? k "b") "blue"]
+  [else s]))
+
+(define (dibujar-circulo c) (place-image (circle 100 "solid" c) 250 250 (empty-scene 500 500)))
+(define colorcir "grey")
+; (big-bang colorcir [to-draw dibujar-circulo] [on-key recibirTecla])
+
+;2
+(define (planck s) (- s 5))
+(define inisize 300)
+(define (definir-color s) (cond [(= 0 (modulo s 10)) "yellow"] [else "purple"]))
+(define (dibujar-tu-perro s) (place-image (circle s "solid" (definir-color s)) 250 250 (empty-scene 500 500)))
+
+(big-bang inisize [to-draw dibujar-tu-perro] [on-tick planck] [stop-when zero?])
