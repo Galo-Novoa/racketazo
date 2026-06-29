@@ -227,9 +227,6 @@
 (check-expect (es-potencia-de-dos? 5) #false)
 (check-expect (es-potencia-de-dos? 6) #false)
 
-
-; EJERCICIO 8
-
 ; ubicar-mensaje : List(Bit) -> List(Bit)
 ; Recibe un Mensaje y una lista de posiciones y devuelve un Bloque con sus bits
 ; posicionados en donde les correspondería luego de agregarle
@@ -247,80 +244,8 @@
               (list 0 0 0 1 0 0 1 0 0 0 1 0 1 0 0 1))
 
 
-; EJERCICIO 9
+; EJERCICIO 8
 
-; calcular-paridades : List(List(Natural)) List(List(Bit)) -> List(Bit)
-; Recibe lista de grupos de paridad de un mensaje y bloque sin paridades,
-; devuelve lista de paridades correspondientes al bloque.
-(define (calcular-paridades grupos bloque)
-  (local
-    (
-     ; posicion->contenido : Natural -> Bit
-     ; Recibe posicion de Bloque, devuelve Bit en esa posicion
-     (define (posicion->contenido p) (list-ith bloque p))
-    )
-    (cond [(empty? grupos) '()]
-          [else (cons
-                 (paridad (map posicion->contenido (first grupos)))
-                 (calcular-paridades (rest grupos) bloque)
-                )
-          ]
-    )
-  )
-)
-
-(check-expect (calcular-paridades (obtener-grupos 16)
-                                  (list 0 0 0 0
-                                        0 0 1 1
-                                        0 0 0 0
-                                        1 1 1 0))
-              (list 0 1 1 1))
-(check-expect (calcular-paridades (obtener-grupos 16)
-                                  (list 0 0 0 1
-                                        0 0 1 0
-                                        0 0 1 0
-                                        1 0 0 1))
-              (list 0 0 1 1))
-
-
-; EJERCICIO 10
-
-; emparejar : List(X) List(Y) -> List(Par[X,Y])
-; Toma dos listas, devuelve lista de n pares
-; compuestos por el elemento n de ambas
-; solo si existe elemento en esa posicion en ambas.
-(define (emparejar l1 l2)
-  (cond [(or (empty? l1) (empty? l2)) '()]
-        [else (cons (make-Par (first l1) (first l2)) (emparejar (rest l1) (rest l2)))]
-  )
-)
-
-(check-expect (emparejar '() '()) '())
-(check-expect (emparejar '() (list 1 2 3)) '())
-(check-expect (emparejar (list 4 5 6) '()) '())
-
-(check-expect (emparejar (list 1 2 3) (list 4 5 6))
-              (list (make-Par 1 4)
-                    (make-Par 2 5)
-                    (make-Par 3 6)))
-
-(check-expect (emparejar (list 1 2 3 4 5) (list 6 7 8))
-              (list (make-Par 1 6)
-                    (make-Par 2 7)
-                    (make-Par 3 8)))
-
-(check-expect (emparejar (list 1 2 3) (list 4 5 6 7 8))
-              (list (make-Par 1 4)
-                    (make-Par 2 5)
-                    (make-Par 3 6)))
-
-(check-expect (emparejar (list 42) (list 99))
-              (list (make-Par 42 99)))
-
-
-; EJERCICIO 11
-
-; 
 
 
 ; -- Esta función es parte de la plantilla dada --
