@@ -253,20 +253,13 @@
 ; Recibe lista de grupos de paridad de un mensaje y bloque sin paridades,
 ; devuelve lista de paridades correspondientes al bloque.
 (define (calcular-paridades grupos bloque)
-  (local
-    (
-     ; posicion->contenido : Natural -> Bit
-     ; Recibe posicion de Bloque, devuelve Bit en esa posicion
-     (define (posicion->contenido p) (list-ith bloque p))
-    )
     (cond [(empty? grupos) '()]
           [else (cons
-                 (paridad (map posicion->contenido (first grupos)))
+                 (paridad (valores-en-posiciones bloque (first grupos)))
                  (calcular-paridades (rest grupos) bloque)
                 )
           ]
     )
-  )
 )
 
 (check-expect (calcular-paridades (obtener-grupos 16)
@@ -320,8 +313,68 @@
 
 ; EJERCICIO 11
 
-; 
+; ubicar-paridades : List(Bit) List(Bit) -> List(Bit)
+; Recibe lista de paridades incluido bit de posicion 0
+; y Bloque sin paridades colocadas, devuelve Bloque
+; con las paridades ubicadas.
+(define (ubicar-paridades lp bloque)
+  (local
+    (
+     (define POSICIONES-BLOQUE (posiciones (length bloque)))
+     ; auxiliar List(Bit) List(Bit) List(Natural) -> List(Bit)
+     ; Hace lo mismo que ubicar-paridades pero recibe
+     ; POSICIONES-BLOQUE como argumento para poder recorrerla
+     (define (auxiliar lpx pos-bloq)
+        (cond [(empty? pos-bloq) '()]
+              [(es-potencia-de-dos? (first pos-bloq)) (cons (first lpx) (auxiliar (rest lpx) (rest pos-bloq)))]
+              [else (cons (list-ith bloque (first pos-bloq)) (auxiliar lpx (rest pos-bloq)))]
+        )
+    )
+   )
+   (auxiliar lp POSICIONES-BLOQUE)
+  )
+)
 
+(check-expect (ubicar-paridades (list 0 1 1 1 0)
+                                (list 0 0 0 1
+                                      0 0 1 0
+                                      0 0 1 0
+                                      1 0 0 1))
+              (list 0 1 1 1
+                    1 0 1 0
+                    0 0 1 0
+                    1 0 0 1))
+
+
+; EJERCICIO 12
+
+; mensaje-a-bloque : List(Bit) -> List(Bit)
+; Recibe un Mensaje (lista de Bits) y lo
+; devuelve codificado con bits de paridad de Hamming
+(define (mensaje-a-bloque m)
+  (local
+    
+    (
+     (define LARGO-MENSAJE (tamaño-bloque (length m)))
+     (define BLOQUE-SIN-PARIDADES (ubicar-mensaje m (posiciones LARGO-MENSAJE)))
+     (define BLOQUE-SIN-BIT-0 (ubicar-paridades
+                              (cons 0 (calcular-paridades (obtener-grupos LARGO-MENSAJE) BLOQUE-SIN-PARIDADES))
+                              BLOQUE-SIN-PARIDADES)
+     )
+     (define  BIT-0 (paridad BLOQUE-SIN-BIT-0))
+    )
+    (cons BIT-0 (rest BLOQUE-SIN-BIT-0))
+ )
+)
+
+(check-expect (mensaje-a-bloque (list 0
+                                      0 1 1
+                                      0 0 0
+                                      1 1 1 0))
+              (list 0 0 1 0
+                    1 0 1 1
+                    1 0 0 0
+                    1 1 1 0))
 
 ; -- Esta función es parte de la plantilla dada --
 ; n-bits-redundancia: Number -> Number
