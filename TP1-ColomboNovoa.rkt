@@ -106,6 +106,10 @@
 (define (binario->natural b)
   (local
     (
+     ; br->nat : List(Bit) -> Natural
+     ; Recibe un Binario revertido (primer bit es el más significativo hasta el menor)
+     ; y lo transforma en natural, es el mismo número que el original solo que con
+     ; los bits ordenados al revés para facilitar la transformación.
      (define (br->nat br)
        (cond [(empty? br) 0]
              [else (+ (* (first br) (expt 2 (length (rest br)))) (br->nat (rest br)))]
@@ -142,18 +146,28 @@
 
 ; EJERCICIO 5
 
-; obtener-grupos : Natural -> List(List(Bit))
+; obtener-grupos : Natural -> List(List(Natural))
 ; Toma un tamaño de bloque de un mensaje con corrección Hamming
 ; y devuelve las posiciones de los bits correspondientes a cada
 ; bit de paridad en el bloque.
 (define (obtener-grupos n)
   (local
-    ((define (obtener-grupo pbp)
+    (
+     ; obtener-grupo : Natural -> List(Natural)
+     ; Recibe el índice del bit en 1 de la posición de un bit de paridad
+     ; y devuelve las posiciones de los bits del bloque sobre las que predica
+     (define (obtener-grupo pbp)
        (local
-        ((define (uno-en-pos-bp? b) (uno-en-pos? b pbp)))
+        (
+         ; uno-en-pos-bp? : Binario -> Natural
+         ; Recibe un Binario y chequea si tiene un 1 en el mismo índice
+         ; en el que la posición de un bit de paridad tiene un 1
+         (define (uno-en-pos-bp? b) (uno-en-pos? b pbp))
+        )
         (map binario->natural (filter uno-en-pos-bp? (map natural->binario (posiciones n))))
        )
-   ))
+    )
+   )
    (map obtener-grupo (posiciones (bloque-a-bits-redundancia n)))
   )
 )
@@ -163,6 +177,37 @@
                     (list 2 3 6 7 10 11 14 15) ; posiciones asociadas al bit de paridad en 2
                     (list 4 5 6 7 12 13 14 15) ; posiciones asociadas al bit de paridad en 4
                     (list 8 9 10 11 12 13 14 15))) ; posiciones asociadas al bit de paridad en 8
+
+
+; EJERCICIO 6
+
+; list-ith : List(Any) Natural -> Any
+; Recibe una lista y un índice n y devuelve
+; el elemento de la lista en la posición n 
+(define (list-ith l n)
+  (cond [(empty? l) "índice inválido"]
+        [(zero? n) (first l)]
+        [(positive? n) (list-ith (rest l) (sub1 n))]
+  )
+)
+
+; valores-en-posiciones : List(Any) List(Natural) -> List(Any)
+; Recibe una lista de elementos de cualquier tipo
+; y otra de posiciones, devuelve un lista
+; con los elementos de la primera lista que están en esas posiciones
+(define (valores-en-posiciones lv lp)
+  (cond [(or (empty? lv) (empty? lp)) '()]
+        [(not (equal? (list-ith lv (first lp)) "índice inválido"))
+         (cons (list-ith lv (first lp)) (valores-en-posiciones lv (rest lp)))]
+        [else (valores-en-posiciones lv (rest lp))]
+  )
+)
+
+(check-expect (valores-en-posiciones (list 12 21 34 47) (list 0 1 2)) (list 12 21 34))
+(check-expect (valores-en-posiciones empty (list 0 1 2)) empty)
+(check-expect (valores-en-posiciones (list "a" "b" "c") empty) empty)
+(check-expect (valores-en-posiciones (list 1 "d" #true) (list 0 1 3 5)) (list 1 "d"))
+
 
 
 ; -- Esta función es parte de la plantilla dada --
