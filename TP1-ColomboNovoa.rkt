@@ -5,19 +5,43 @@
 
 ; PREGUNTAS DE TEORÍA
 
-; 1. Intente convencerse de que los 4 bits de paridad cubren todo el mensaje.
+; 1. ¿Y con el bit en 0 qué hacemos?
+
+; Podríamos usarlo como bit de paridad de la lista de bits de paridad para en algunos
+; casos poder determinar si llegaron corruptos y descartar el mensaje,
+; o hasta tal vez intentar reconstruir el bloque completo, contrastando combinaciones
+; de posibles bits de paridad con el mensaje.
+
+
+; 2. Intente convencerse de que los 4 bits de paridad cubren todo el mensaje.
 ; Calcule qué conjunto de bits de paridad deben fallar para exponer cada bit fallido en el mensaje.
 
 ; Para determinar cuáles bits de paridad son los que ayudan a exponer el error en cada bit del mensaje,
 ; necesitamos transformar la posición de ese bit a binario
 
-; Representación de datos.
+
+; 3. Convierta los naturales 20, 32 y 15 para familiarizarse con el algoritmo.
+
+
+; 4. Las funciones de racket remainder y quotient que devuelven el resto y el cociente de hacer
+; una división respectivamente pueden ser útiles.
+
+
+; 5. Convierta los binarios 10100, 100000 y 1111 a números naturales para familiarizarse con el algoritmo.
+
+
+; 6. ¿Quién protege a quien protege?
+
+
+; REPRESENTACIÓN DE DATOS.
+
 ; Representamos mensajes o bloques de información con listas de ceros y unos.
 ; Tipo de dato Bit: Natural que solo puede ser 0 o 1.
 ; 0 = (sub1 1)
 ; 1 = (add1 0)
-; Mensaje: lista de Bits
-; Bloque: Lista de Listas de Bits?
+; Mensaje: lista de Bits, representa un mensaje transmitido en sistema binario de una computadora a otra.
+; Binario: Lista de Bits, representa un número natural en sistema binario con sus cifras en orden
+; invertido (desde la cifra menos significativa hasta la más significativa). 0 = '().
 
 ; Constantes para casos de prueba
 (define MENSAJE1 (list 0 0 1 1 0 0 0 1 1 1 0))
@@ -26,6 +50,9 @@
 
 
 ; FUNCIONES
+
+
+; EJERCICIO 1
 
 ; paridad : List(Bit) -> Bit
 ; Toma un Mensaje, devuelve 1 si
@@ -51,7 +78,51 @@
 (check-expect (paridad MENSAJE1) 1)
 (check-expect (paridad MENSAJE2) 1)
 (check-expect (paridad MENSAJE3) 0)
-L,R  
+
+
+; EJERCICIO 2
+
+; natural->binario : Natural -> Binario
+; Toma un Natural y lo devuelve transformado a Binario
+(define (natural->binario n)
+  (cond [(zero? n) '()]
+        [else (cons (modulo n 2) (natural->binario (quotient n 2)))]
+  )
+)
+
+; Definimos 0 como lista vacía para que no se agregue un 0 extra al final de los
+; numeros distintos de 0 y para poder usar empty como caso base cuando operemos sobre el tipo Binario.
+
+(check-expect (natural->binario 0) '())
+(check-expect (natural->binario 1) (list 1))
+(check-expect (natural->binario 3) (list 1 1))
+(check-expect (natural->binario 5) (list 1 0 1))
+(check-expect (natural->binario 6) (list 0 1 1))
+(check-expect (natural->binario 34) (list 0 1 0 0 0 1))
+
+
+; EJERCICIO 3
+
+; binario->natural : Binario -> Natural
+; Toma un Binario y lo devuelve transformado a Natural
+(define (binario->natural b)
+  (local
+    (
+     (define (br->nat br)
+       (cond [(empty? br) 0]
+             [else (+ (* (first br) (expt 2 (length (rest br)))) (br->nat (rest br)))]
+       )
+     )
+    )
+    (br->nat (reverse b))
+  )
+)
+
+(check-expect (binario->natural (list 1 1)) 3)
+(check-expect (binario->natural (list 1 0 1)) 5)
+(check-expect (binario->natural (list 0 1 1)) 6)
+(check-expect (binario->natural (list 0 1 0 0 0 1)) 34)
+
 
 ; -- Esta función es parte de la plantilla dada --
 ; n-bits-redundancia: Number -> Number
