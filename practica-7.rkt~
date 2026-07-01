@@ -1,0 +1,7 @@
+(define RAND-MAX 4294967087) ; número máximo para valores aleatorios
+ 
+; aleatorio : Number Number -> Number
+; dados dos números a y b, devuelve un número aleatorio el intervalo real [a,b].
+(define (aleatorio a b)
+      (+ a (* (- b a) (/  (+ 1 (random RAND-MAX)) (* 1.0 RAND-MAX)))))
+
