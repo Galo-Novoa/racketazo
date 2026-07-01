@@ -1,0 +1,93 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname practica-5a) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")) #f)))
+
+; buscar-contacto : Contactos -> Bool
+(define (buscar-contacto l c)
+  (if (empty? l) #f
+      (if
+        (string=? (first l) c)
+        #t
+        (buscar-contacto (rest l) c)
+      )
+  )
+)
+
+(define (contiene-Marcos? l) (cond [(empty? l) #false]
+                                   [(cons? l) (if (string=? (first l) "Marcos")
+                                                  #true
+                                                  (contiene-Marcos? (rest l)))]))
+
+(contiene-Marcos? (cons "Marcos" (cons "C" '())))
+
+(contiene-Marcos? (cons "A" (cons "Marcos" (cons "C" '()))))
+
+(contiene-Marcos? (cons "A" (cons "B" (cons "C" '()))))
+
+(cons 45 (cons 23 (cons 9 '())))
+
+; suma-montos : Listof Number -> Number
+(define (suma-montos l)
+  (cond
+    [(empty? l) 0]
+    [(cons? l)
+       (+
+                (first l)
+                (suma-montos (rest l))
+       )
+    ]
+  )
+)
+
+; pos? : Listof Number -> Bool
+(define (pos? l)
+  (cond [(empty? l) #t]
+        [(cons? l)
+          (if (>= (first l) 0)
+              (pos? (rest l))
+              #f
+          )
+        ]
+   )
+)
+
+; checked-sum : Listof Number -> Number
+(define (checked-sum l)
+  (if (pos? l) (suma-montos l) "No es una lista de positivos")
+)
+
+; lista-pares : Listof Number -> Listof Number
+(define (pares l)
+  (cond
+    [(empty? l) '()]
+    [(cons? l)
+      (if (even? (first l))
+          (cons (first l) (pares (rest l)))
+          (pares (rest l))
+      )
+    ]
+  )
+)
+
+; cortas : Listof String -> Listof String
+(define (cortas l)
+  (cond [(empty? l) '()]
+        [(>= (string-length (first l)) 5) (cortas (rest l))]
+        [else (cons (first l) (cortas (rest l)))]
+  )
+)
+
+; mod : Posn -> Number
+(define (mod pn)
+  (sqrt (+ (sqr (posn-x pn)) (sqr (posn-y pn))))
+)
+
+(define MAX 5)
+
+; cerca : Listof Posn -> Listof Posn
+(define (cerca l)
+  (cond [(empty? l) '()]
+        [(< (mod (first l)) MAX) (cons (first l) (cerca (rest l)))]
+        [else (cerca (rest l))]
+  )
+)
