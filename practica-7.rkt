@@ -44,6 +44,7 @@
 ; caen dentro del círculo:
 (define AREA (* (/ (length ADENTRO) MAX) 4))
 
+
 ; intervalo : Natural Natural -> List(Natural)
 (define (intervalo a b)
   (cond [(> a b) '()]
@@ -81,4 +82,143 @@
 (check-expect (criba-eratostenes 100) (list 2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97))
 
 (define (new-line s) (string-append s "\n"))
-(write-file "primos.txt" (foldr string-append "" (map new-line (map number->string (criba-eratostenes 10000)))))
+; (write-file "primos.txt" (foldr string-append "" (map new-line (map number->string (criba-eratostenes 10000)))))
+
+(define (implica p q) (if p (if q #t #f) #t))
+(define (equivalencia p q) (if (equal? p q) #t #f))
+(define (valuaciones n)
+  (local (
+          (define (agregar-t l) (cons #t l))
+          (define (agregar-f l) (cons #f l))
+         )
+          (cond [(zero? n) (list '())]
+          [else (append (map agregar-f (valuaciones (sub1 n))) (map agregar-t (valuaciones (sub1 n))))]
+          )
+   )
+)
+
+(check-expect (valuaciones 3) (list
+ (list #false #false #false)
+ (list #false #false #true)
+ (list #false #true #false)
+ (list #false #true #true)
+ (list #true #false #false)
+ (list #true #false #true)
+ (list #true #true #false)
+ (list #true #true #true))
+)
+
+(define (B l)
+ (let ([p1 (first l)]
+        [p2 (second l)]
+        [p3 (third l)])
+  (equivalencia
+   (implica (and p1 p2) p3)
+   (and (implica p1 p3) (implica p2 p3))
+  )
+ )
+)
+
+(define (C l)
+  (let ([p1 (first l)]
+        [p2 (second l)]
+       )
+    (equivalencia (or (not p1) (not p2)) (and p1 p2))
+  )
+)
+
+(define (evaluar p n)
+  (map p (valuaciones n))
+)
+
+(define (and2 p1 p2) (and p1 p2))
+(define (or2 p1 p2) (or p1 p2))
+
+(define (tautologia? p n) (foldr and2 #t (evaluar p n)))
+(define (satisfactible? p n) (foldr or2 #f (evaluar p n)))
+(define (contradiccion? p n) (not (satisfactible? p n)))
+
+
+; ============================================================
+; TESTS PARA TAUTOLOGÍA, SATISFACTIBLE Y CONTRADICCIÓN
+; ============================================================
+
+; 1. Tautología: p ∨ ¬p (siempre verdadera)
+(define (p-o-no-p v)
+  (or (first v) (not (first v))))
+
+(check-expect (tautologia? p-o-no-p 1) #t)
+(check-expect (satisfactible? p-o-no-p 1) #t)
+(check-expect (contradiccion? p-o-no-p 1) #f)
+
+; 2. Contradicción: p ∧ ¬p (siempre falsa)
+(define (p-y-no-p v)
+  (and (first v) (not (first v))))
+
+(check-expect (tautologia? p-y-no-p 1) #f)
+(check-expect (satisfactible? p-y-no-p 1) #f)
+(check-expect (contradiccion? p-y-no-p 1) #t)
+
+; 3. p ∨ q (satisfactible, no tautología, no contradicción)
+(define (p-o-q v)
+  (or (first v) (second v)))
+
+(check-expect (tautologia? p-o-q 2) #f)
+(check-expect (satisfactible? p-o-q 2) #t)
+(check-expect (contradiccion? p-o-q 2) #f)
+
+; 4. p ∧ q (satisfactible, no tautología, no contradicción)
+(define (p-y-q v)
+  (and (first v) (second v)))
+
+(check-expect (tautologia? p-y-q 2) #f)
+(check-expect (satisfactible? p-y-q 2) #t)
+(check-expect (contradiccion? p-y-q 2) #f)
+
+; 5. p → p (tautología)
+(define (implica-p-p v)
+  (implica (first v) (first v)))
+
+(check-expect (tautologia? implica-p-p 1) #t)
+(check-expect (satisfactible? implica-p-p 1) #t)
+(check-expect (contradiccion? implica-p-p 1) #f)
+
+; 6. p → q (satisfactible, no tautología, no contradicción)
+(define (p-implica-q v)
+  (implica (first v) (second v)))
+
+(check-expect (tautologia? p-implica-q 2) #f)
+(check-expect (satisfactible? p-implica-q 2) #t)
+(check-expect (contradiccion? p-implica-q 2) #f)
+
+; 7. p ↔ p (tautología)
+(define (equiv-p-p v)
+  (equivalencia (first v) (first v)))
+
+(check-expect (tautologia? equiv-p-p 1) #t)
+(check-expect (satisfactible? equiv-p-p 1) #t)
+(check-expect (contradiccion? equiv-p-p 1) #f)
+
+; 8. p ↔ q (satisfactible, no tautología, no contradicción)
+(define (equiv-p-q v)
+  (equivalencia (first v) (second v)))
+
+(check-expect (tautologia? equiv-p-q 2) #f)
+(check-expect (satisfactible? equiv-p-q 2) #t)
+(check-expect (contradiccion? equiv-p-q 2) #f)
+
+; 9. p ∧ ¬p ∧ q (contradicción)
+(define (p-y-no-p-y-q v)
+  (and (first v) (not (first v)) (second v)))
+
+(check-expect (tautologia? p-y-no-p-y-q 2) #f)
+(check-expect (satisfactible? p-y-no-p-y-q 2) #f)
+(check-expect (contradiccion? p-y-no-p-y-q 2) #t)
+
+; 10. p ∨ ¬p ∨ q (tautología)
+(define (p-o-no-p-o-q v)
+  (or (first v) (not (first v)) (second v)))
+
+(check-expect (tautologia? p-o-no-p-o-q 2) #t)
+(check-expect (satisfactible? p-o-no-p-o-q 2) #t)
+(check-expect (contradiccion? p-o-no-p-o-q 2) #f)
